@@ -1,11 +1,21 @@
 if __name__ == '__main__':
     import qrcode
-    from PIL import Image
+    from PIL import Image, ImageOps, ImageDraw
 
-    OVERLAY_IMAGE = '../images/overlay_image.jpg'  # this is an example
+    
     DATA_CONSTANT = 'https://github.com/addleonel/python-fundamentals'
-    SAVE_QR_CODE_PATH = '../qrcode_images/python_fundamentals_with_logo.png'
- 
+    SAVE_QR_CODE_PATH = '../qrcode_images/python_fundamentals_background.png'
+
+    # Circular Thumbnail
+    image = Image.open('../images/overlay_image.png')
+    image = image.resize((120, 120))
+    bigsize = (image.size[0]*3, image.size[1]*3)
+    mask = Image.new('L', bigsize, 0)
+    draw = ImageDraw.Draw(mask)
+    draw.ellipse((0, 0) + bigsize, fill=255)
+    mask = mask.resize(image.size, Image.ANTIALIAS)
+    image.putalpha(mask)
+    
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_H,
@@ -21,10 +31,11 @@ if __name__ == '__main__':
         back_color=(255, 255, 255),
     )
 
-    logo_display = Image.open(OVERLAY_IMAGE)
-    logo_display.thumbnail((70, 70))
+    img.save(SAVE_QR_CODE_PATH)
 
-    logo_position = ((img.size[0] - logo_display.size[0])//2, (img.size[1] - logo_display.size[1])//2)
+    background = Image.open(SAVE_QR_CODE_PATH)
 
-    img.paste(logo_display, logo_position)
-    img.save(SAVE_QR_CODE_PATH) 
+    logo_position = ((background.size[0] - image.size[0])//2, (background.size[1] - image.size[1])//2)
+
+    background.paste(image, logo_position, image)
+    background.save('../qrcode_images/python_fundamentals_with_logo_.png') 
